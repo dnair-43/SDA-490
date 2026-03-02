@@ -1,3 +1,6 @@
+###THE BETTER VISUAL GRAPH 
+
+
 #install.packages(c("readr", "tidyverse", "lubridate"))
 
 library(readr)
@@ -83,3 +86,4 @@ axis( side = 1, at = seq(min(mean_by_age$age, na.rm = TRUE),
            max(mean_by_age$age, na.rm = TRUE),
            by = 5)
 )
+
