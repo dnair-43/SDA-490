@@ -1,0 +1,36 @@
+---
+title: "Shiny app"
+format: html
+editor: visual
+---
+
+## Shiny
+
+```{r}
+#install.packages("shiny")
+
+
+library(shiny)
+library(bslib)
+```
+
+```{r}
+
+# Define UI for app
+ui <- page_sidebar(
+  title = "Rise in Authoritarian Values in Canada and Nato Countries",
+  sidebar = sidebar("sidebar"),
+  "main contents"
+)
+
+
+server <- function(input, output){
+  renderText <- paste("the number you selected is:", input$value)
+  
+}
+
+# Run the app ----
+shinyApp(ui = ui, server = server)
+
+
+```
