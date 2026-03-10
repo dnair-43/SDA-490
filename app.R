@@ -6,8 +6,11 @@ library(sf)
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(RColorBrewer)
+library(readr)
 
 # ── Data ──────────────────────────────────────────────────────────────────────
+vdem <- read_csv("V-Dem-CY-Core-v15.csv")
+
 vdem_all <- vdem |>
   filter(year >= 1990, year <= 2024) |>
   select(country_name, year, v2x_polyarchy) |>
