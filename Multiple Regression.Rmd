@@ -1,0 +1,70 @@
+---
+title: "Capstone Multiple Regression"
+output: html_document
+date: "2026-03-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# Install necessary packages if you haven't already
+# install.packages(c("tidyverse", "vdemdata", "WDI", "broom", "car"))
+
+library(tidyverse)  # For data wrangling
+library(vdemdata)   # Access V-Dem directly in R
+library(WDI)        # Access World Bank Data (GDP, GNI, Unemployment)
+library(broom)      # For tidy model outputs
+
+# 1. Fetch V-Dem Data (Example: Electoral Democracy Index)
+vdem_df <- vdem %>%
+  filter(year >= 2000) %>%
+  select(country_name, country_text_id, year, 
+         v2x_polyarchy,      # Dependent Variable: Democracy Score
+         v2x_polar,          # Political Polarization
+         v2x_egaldem)        # Egalitarian Democracy (Inequality proxy)
+
+# 2. Fetch World Bank Data (GDP, GNI, Unemployment)
+wb_data <- WDI(indicator = c("NY.GDP.PCAP.CD", "NY.GNP.PCAP.CD", "SL.UEM.TOTL.ZS"), 
+               start = 2000, end = 2024, extra = TRUE) %>%
+  rename(gdp_pc = NY.GDP.PCAP.CD, 
+         gni_pc = NY.GNP.PCAP.CD, 
+         unemployment = SL.UEM.TOTL.ZS)
+
+# 3. Merge Datasets
+# Note: You will need to join your WVS 'Individualism' and 'Age' index here
+final_df <- vdem_df %>%
+  inner_join(wb_data, by = c("country_text_id" = "iso3c", "year" = "year")) %>%
+  drop_na() # Removing missing values for the regression
+
+```
+
+```{r multiple regression}
+# Define the Multiple Regression Model
+# Formula: V-Dem Score ~ Economic Factors + Social Factors + Demographic Factors
+model_vdem <- lm(v2x_polyarchy ~ gdp_pc + gni_pc + unemployment + 
+                 v2x_polar + age_median + individualism_score, 
+                 data = final_df)
+
+# View the Summary
+summary(model_vdem)
+
+# Get Tidy Results (Coefficients, P-values, Std Errors)
+model_results <- tidy(model_vdem)
+print(model_results)
+
+```
+
+```{r diagnostic checks}
+library(car)
+# Check for Multicollinearity (Variance Inflation Factor)
+# If VIF > 5 or 10, your variables are too similar.
+vif(model_vdem)
+
+# Plot residuals to check for homoscedasticity
+plot(model_vdem, which = 1)
+
+```
+
