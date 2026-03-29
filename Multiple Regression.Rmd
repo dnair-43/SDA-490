@@ -8,63 +8,356 @@ date: "2026-03-23"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+#if (!require("remotes")) install.packages("remotes")
+#remotes::install_github("vdeminstitute/vdemdata")
+```
 
 ```{r}
-# Install necessary packages if you haven't already
-# install.packages(c("tidyverse", "vdemdata", "WDI", "broom", "car"))
+library(tidyverse)
+file.exists("WVS_Time_Series_1981-2022_rds_v5_0.rds")
 
-library(tidyverse)  # For data wrangling
-library(vdemdata)   # Access V-Dem directly in R
-library(WDI)        # Access World Bank Data (GDP, GNI, Unemployment)
-library(broom)      # For tidy model outputs
 
-# 1. Fetch V-Dem Data (Example: Electoral Democracy Index)
-vdem_df <- vdem %>%
-  filter(year >= 2000) %>%
-  select(country_name, country_text_id, year, 
-         v2x_polyarchy,      # Dependent Variable: Democracy Score
-         v2x_polar,          # Political Polarization
-         v2x_egaldem)        # Egalitarian Democracy (Inequality proxy)
+# These are the standardized "Integrated" codes for the Time Series file
+target_vars <- c(
+  "S002VS",    # Wave number
+  "S003",    # Country Code (Numeric)
+  "S020",    # Year
+  "E114",    # Strong Leader (Equivalent to Q235 / V127)
+  "E117",    # Army Rule (Equivalent to Q238 / V130)
+  "E115",    # Having Experts Rule
+  "E116",    # Expert Rule (Equivalent to Q237 / V129)
+  "E018",    # Respect for Authority (Equivalent to Q45 / V69)
+  "A042",    # Obedience (Equivalent to Q17 / V21)
+  "E232",    # Religious Law (Equivalent to Q252 / V155)
+  "E233",    # Army Takeover (Equivalent to Q253 / V156)
+  "A124_02", # Neighbor: Race
+  "A124_06", # Neighbor: Immigrants
+  "A124_09", # Neighbor: Religion
+  "A124_12"  # Neighbor: Language
+)
 
-# 2. Fetch World Bank Data (GDP, GNI, Unemployment)
-wb_data <- WDI(indicator = c("NY.GDP.PCAP.CD", "NY.GNP.PCAP.CD", "SL.UEM.TOTL.ZS"), 
-               start = 2000, end = 2024, extra = TRUE) %>%
-  rename(gdp_pc = NY.GDP.PCAP.CD, 
-         gni_pc = NY.GNP.PCAP.CD, 
-         unemployment = SL.UEM.TOTL.ZS)
+# Read just the column names to see what we are dealing with
+names(read_rds("WVS_Time_Series_1981-2022_rds_v5_0.rds")) %>% head(20)
 
-# 3. Merge Datasets
-# Note: You will need to join your WVS 'Individualism' and 'Age' index here
-final_df <- vdem_df %>%
-  inner_join(wb_data, by = c("country_text_id" = "iso3c", "year" = "year")) %>%
-  drop_na() # Removing missing values for the regression
 
-```
+# Load the file using the corrected path and selection
+# Ensure the filename matches exactly what is in your folder
+wvs_subset <- read_rds("WVS_Time_Series_1981-2022_rds_v5_0.rds") %>%
+  select(all_of(target_vars))
 
-```{r multiple regression}
-# Define the Multiple Regression Model
-# Formula: V-Dem Score ~ Economic Factors + Social Factors + Demographic Factors
-model_vdem <- lm(v2x_polyarchy ~ gdp_pc + gni_pc + unemployment + 
-                 v2x_polar + age_median + individualism_score, 
-                 data = final_df)
-
-# View the Summary
-summary(model_vdem)
-
-# Get Tidy Results (Coefficients, P-values, Std Errors)
-model_results <- tidy(model_vdem)
-print(model_results)
+# Check that it loaded correctly
+head(wvs_subset)
 
 ```
 
-```{r diagnostic checks}
-library(car)
-# Check for Multicollinearity (Variance Inflation Factor)
-# If VIF > 5 or 10, your variables are too similar.
-vif(model_vdem)
+```{r Creating the Authoritarian_values_index}
+library(tidyverse)
+library(haven) # For zap_labels
 
-# Plot residuals to check for homoscedasticity
-plot(model_vdem, which = 1)
+wvs_indexed <- wvs_subset %>%
+  # --- STEP 1: STRIP LABELS ---
+  # This converts all 'haven_labelled' columns into standard numbers
+  mutate(across(everything(), ~as.numeric(zap_labels(.)))) %>%
+  
+  # --- STEP 2: PERFORM RECODING ---
+  mutate(
+    # Political Systems (1=Very Good, 4=Very Bad)
+    auth_leader  = (5 - E114) / 3, 
+    auth_army    = (5 - E117) / 3,
+    auth_experts = (5 - E116) / 3,
+    
+    # Values (Respect for Authority E018: 1=Good, 3=Bad)
+    auth_respect = (4 - E018) / 2,
+    
+    # Obedience (A042: 1=Mentioned, 2=Not Mentioned)
+    auth_obey    = ifelse(A042 == 1, 1, 0),
+    
+    # Democracy Definitions (1=Not Essential, 10=Essential)
+    auth_relig_law = (E232 - 1) / 9,
+    auth_army_take = (E233 - 1) / 9,
+    
+    # Neighbors (1=Mentioned/Reject, 2=Not Mentioned)
+    reject_race  = ifelse(A124_02 == 1, 1, 0),
+    reject_immig = ifelse(A124_06 == 1, 1, 0),
+    reject_relig = ifelse(A124_09 == 1, 1, 0),
+    reject_lang  = ifelse(A124_12 == 1, 1, 0)
+  ) %>%
+  # --- STEP 3: CREATE THE INDEX ---
+  rowwise() %>%
+  mutate(authoritarian_values_index = mean(c(
+    auth_leader, auth_army, auth_experts, auth_respect, auth_obey,
+    auth_relig_law, auth_army_take, reject_race, reject_immig, 
+    reject_relig, reject_lang
+  ), na.rm = TRUE)) %>%
+  ungroup()
+
+
+
+# 1. Get a statistical summary of the new index
+# This will show you the Min, Max, Mean, and how many NAs (missing values) exist
+summary(wvs_indexed$authoritarian_values_index)
+
+# 2. Visualize the distribution
+# A successful index should usually look like a "bell curve" or be slightly skewed,
+# ranging from 0 to 1.
+hist(wvs_indexed$authoritarian_values_index, 
+     main = "Distribution of Authoritarian Values Index",
+     xlab = "Index Score (0 = Low, 1 = High)", 
+     col = "steelblue", 
+     breaks = 50)
+
+# 3. Check the first few rows of just the components and the final index
+wvs_indexed %>%
+  select(S003, S020, auth_leader, auth_army, auth_experts, authoritarian_values_index) %>%
+  head(10)
+```
+
+
+```{r Checking List of Countries in the Authoritarian_values_index}
+# Install the missing package
+install.packages("countrycode")
+
+library(tidyverse)
+library(haven)
+library(countrycode)
+
+# Recode and Create Index
+wvs_indexed <- wvs_subset %>%
+  mutate(across(everything(), ~as.numeric(zap_labels(.)))) %>%
+  mutate(
+    auth_leader    = (5 - E114) / 3, 
+    auth_army      = (5 - E117) / 3,
+    auth_experts   = (5 - E116) / 3,
+    auth_respect   = (4 - E018) / 2,
+    auth_obey      = ifelse(A042 == 1, 1, 0),
+    auth_relig_law = (E232 - 1) / 9,
+    auth_army_take = (E233 - 1) / 9,
+    reject_race    = ifelse(A124_02 == 1, 1, 0),
+    reject_immig   = ifelse(A124_06 == 1, 1, 0),
+    reject_relig   = ifelse(A124_09 == 1, 1, 0),
+    reject_lang    = ifelse(A124_12 == 1, 1, 0)
+  ) %>%
+  rowwise() %>%
+  mutate(authoritarian_values_index = mean(c(
+    auth_leader, auth_army, auth_experts, auth_respect, auth_obey,
+    auth_relig_law, auth_army_take, reject_race, reject_immig, 
+    reject_relig, reject_lang
+  ), na.rm = TRUE)) %>%
+  ungroup()
+
+
+# Generate the list of countries
+country_list <- wvs_indexed %>%
+  filter(!is.na(authoritarian_values_index)) %>%
+  distinct(S003) %>%
+  mutate(country_name = countrycode(S003, origin = "iso3n", destination = "country.name")) %>%
+  arrange(country_name)
+
+# Display the list
+print(country_list, n = Inf)
 
 ```
+
+
+```{r Fixed Merging Script}
+library(vdemdata)
+library(dplyr)
+
+# We use the 'any_of' trick here so R doesn't have to search through 
+# the whole dataset multiple times.
+target_vdem_vars <- c(
+  "country_text_id", "year", "v2x_polyarchy", "v2cacamps",
+  "v2xps_poly", "v2x_ps_poly", "v2mecenrat", "v2x_vdem_dsi"
+)
+
+# This is much faster than the standard pipe
+vdem_indicators <- vdem[, names(vdem) %in% target_vdem_vars] %>%
+  filter(year >= 1980) %>%
+  rename(
+    polarization = v2cacamps,
+    # Standardize the names immediately
+    party_strength = matches("v2xps_poly|v2x_ps_poly"),
+    digital_proxy = matches("v2mecenrat|v2x_vdem_dsi")
+  )
+
+# Check the first few rows to ensure the names are standardized
+head(vdem_indicators)
+
+# This should return 2025 as the max year
+max(vdem_indicators$year)
+
+
+
+# 1. Surgical selection while the data is in the package environment
+vdem_indicators <- vdemdata::vdem %>%
+  filter(year >= 1980) %>%
+  select(
+    country_text_id, year, v2x_polyarchy, 
+    polarization = v2cacamps,
+    # Standardize the party/digital tags for v16
+    party_strength = any_of(c("v2xps_poly", "v2x_ps_poly")),
+    digital_proxy = any_of(c("v2mecenrat", "v2x_vdem_dsi", "v2x_dsi"))
+  )
+
+# 2. FORCE R to delete the master dataset from RAM
+rm(vdem)
+gc() # Garbage collection: frees up the memory for the regression
+```
+
+
+
+```{r Robust World Bank Loading (Chunked)}
+
+# THIS IS CURRENTLY NOT WORKING
+
+
+library(tidyverse)
+library(countrycode)
+
+# ── GINI Data ──────────────────────────────────────────────────────────────────
+gini_path <- "GINI_DATA.csv"
+
+if (file.exists(gini_path)) {
+  gini_raw <- read_csv(
+    gini_path,
+    show_col_types  = FALSE,
+    skip_empty_rows = TRUE
+  )
+  
+  # ── Detect format: wide (World Bank) vs. long ─────────────────────────────
+  # World Bank exports: "Country Name", "Country Code", "Indicator Name",
+  # "Indicator Code", then year columns (e.g. 1960, 1961, ..., 2025).
+  is_wide <- any(grepl("country.name", names(gini_raw), ignore.case = TRUE)) ||
+    any(grepl("^\\d{4}$", names(gini_raw)))
+  
+  if (is_wide) {
+    country_col <- names(gini_raw)[1]
+    year_cols   <- names(gini_raw)[grepl("^\\d{4}$", names(gini_raw))]
+    
+    gini_data <- gini_raw %>%
+      select(country = all_of(country_col), all_of(year_cols)) %>%
+      pivot_longer(
+        cols      = all_of(year_cols),
+        names_to  = "year",
+        values_to = "gini"
+      ) %>%
+      mutate(
+        year = as.integer(year),
+        gini = suppressWarnings(as.numeric(gini))
+      ) %>%
+      filter(!is.na(gini))
+  } else {
+    names(gini_raw) <- tolower(names(gini_raw))
+    gini_col  <- intersect(c("gini", "gini_index", "gini_coefficient"), names(gini_raw))[1]
+    gini_data <- gini_raw %>%
+      rename(gini = all_of(gini_col)) %>%
+      select(country, year, gini) %>%
+      mutate(year = as.integer(year), gini = as.numeric(gini))
+  }
+  
+  # ── Harmonise World Bank country names → WVS country names ─────────────────
+  wb_to_wvs <- c(
+    "United States"                        = "United States",
+    "United Kingdom"                       = "United Kingdom",
+    "Russian Federation"                   = "Russia",
+    "Korea, Rep."                          = "South Korea",
+    "Korea, Dem. People\u2019s Rep."      = "North Korea",
+    "Iran, Islamic Rep."                   = "Iran",
+    "Egypt, Arab Rep."                     = "Egypt",
+    "Venezuela, RB"                        = "Venezuela",
+    "Syrian Arab Republic"                 = "Syria",
+    "Yemen, Rep."                          = "Yemen",
+    "Congo, Dem. Rep."                     = "Democratic Republic of the Congo",
+    "Congo, Rep."                          = "Republic of the Congo",
+    "Gambia, The"                          = "Gambia",
+    "Lao PDR"                              = "Laos",
+    "West Bank and Gaza"                   = "Palestine",
+    "Micronesia, Fed. Sts."                = "Micronesia",
+    "Slovak Republic"                      = "Slovakia",
+    "Czechia"                              = "Czech Republic",
+    "Kyrgyz Republic"                      = "Kyrgyzstan",
+    "Turkiye"                              = "Turkey",
+    "Cote d\u2019Ivoire"                  = "Ivory Coast",
+    "Cabo Verde"                           = "Cape Verde",
+    "Eswatini"                             = "Swaziland",
+    "North Macedonia"                      = "North Macedonia",
+    "Bosnia and Herzegovina"               = "Bosnia and Herzegovina"
+  )
+  gini_data <- gini_data %>%
+    mutate(country = dplyr::recode(country, !!!wb_to_wvs))
+} else {
+  # Synthetic Gini demo data keyed to the same countries & years as WVS
+  set.seed(99)
+  gini_countries <- c(
+    "Denmark", "Sweden", "Belgium", "Norway", "Ireland", "France",
+    "Mexico", "Brazil", "Venezuela", "Chile", "Argentina",
+    "United States", "Canada", "Russia", "Finland", "Australia",
+    "Qatar", "Vietnam", "China", "Sudan", "Iran", "Iraq",
+    "Niger", "Israel", "Palestine", "Libya", "Bolivia",
+    "Hungary", "Poland", "Romania", "Ukraine", "Italy",
+    "United Kingdom", "Pakistan", "Mozambique"
+  )
+  gini_data <- expand.grid(
+    country = gini_countries,
+    year    = c(1994, 1999, 2004, 2009, 2014, 2020)
+  ) %>%
+    mutate(gini = round(runif(n(), 25, 65), 1))
+}
+
+```
+
+```{r Pulling Other Economic Indicators}
+# Pull other economic indicators
+res_rents <- WDI(indicator = "NY.GDP.FRST.RT.ZS", start = 1980, end = 2025, extra = TRUE)
+gni_data  <- WDI(indicator = "NY.GNP.PCAP.PP.CD", start = 1980, end = 2025, extra = TRUE)
+
+# Combine locally
+wb_data <- res_rents %>%
+  select(iso3c, year, resource_rents = NY.GDP.FRST.RT.ZS) %>%
+  left_join(select(gni_data, iso3c, year, gni_pc = NY.GNP.PCAP.PP.CD), by = c("iso3c", "year")) %>%
+  left_join(select(gini_data, iso3c, year, gini = SI.POV.GINI), by = c("iso3c", "year"))
+
+# Check if it worked
+head(wb_data)
+
+```
+
+
+
+```{r Final Merge and Regression}
+
+# THIS WONT WORK UNTIL GINI GETS PROPERLY LOADED INTO R
+
+library(zoo)
+
+# Clean WVS for duplicates before merging
+wvs_clean <- wvs_indexed %>% 
+  distinct(iso3c, S020, .keep_all = TRUE)
+
+final_data <- vdem_indicators %>%
+  inner_join(wb_data, by = c("country_text_id" = "iso3c", "year")) %>%
+  inner_join(wvs_clean, by = c("country_text_id" = "iso3c", "year" = "S020")) %>%
+  group_by(country_text_id) %>%
+  arrange(year) %>%
+  mutate(
+    gini_filled = na.approx(gini, na.rm = FALSE),
+    gini_filled = na.locf(gini_filled, na.rm = FALSE),
+    resource_filled = na.approx(resource_rents, na.rm = FALSE),
+    logged_wealth = log(gni_pc)
+  ) %>%
+  ungroup() %>%
+  drop_na(v2x_polyarchy, authoritarian_values_index, polarization, 
+          digital_proxy, party_strength, logged_wealth)
+
+# RUN REGRESSION
+summary(lm(scale(v2x_polyarchy) ~ scale(polarization) + scale(resource_filled) + 
+             scale(logged_wealth) + scale(gini_filled) + scale(digital_proxy) + 
+             scale(party_strength) + scale(authoritarian_values_index), 
+           data = final_data))
+
+```
+
+
+
 
