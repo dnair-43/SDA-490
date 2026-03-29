@@ -7,7 +7,7 @@ setwd("~/Uni/Year 5/semester 2/Data")
 vdem_raw <- read_csv("V-Dem-CD-v16.csv", show_col_types = FALSE)
 
 df <- vdem_raw |>
-  filter(country_name == "Canada", year >= 1990, year <= 2024) |>
+  filter(country_name == "Canada", year >= 1980, year <= 2024) |>
   select(year, vdem_score = v2x_polyarchy)
 
 ggplot(df, aes(x = year, y = vdem_score)) +
