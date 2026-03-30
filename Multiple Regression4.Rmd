@@ -1,0 +1,353 @@
+---
+title: "Capstone Multiple Regression"
+output: html_document
+date: "2026-03-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#if (!require("remotes")) install.packages("remotes")
+#remotes::install_github("vdeminstitute/vdemdata")
+```
+
+```{r Pulling the Questions from WVS that go in the Authoritarian Values Index}
+
+library(tidyverse)
+file.exists("WVS_Time_Series_1981-2022_rds_v5_0.rds")
+
+
+# These are the standardized "Integrated" codes for the Time Series file
+target_vars <- c(
+  "S002VS",    # Wave number
+  "S003",    # Country Code (Numeric)
+  "S020",    # Year
+  "E114",    # Strong Leader (Equivalent to Q235 / V127)
+  "E117",    # Army Rule (Equivalent to Q238 / V130)
+  "E115",    # Having Experts Rule
+  "E116",    # Expert Rule (Equivalent to Q237 / V129)
+  "E018",    # Respect for Authority (Equivalent to Q45 / V69)
+  "A042",    # Obedience (Equivalent to Q17 / V21)
+  "E232",    # Religious Law (Equivalent to Q252 / V155)
+  "E233",    # Army Takeover (Equivalent to Q253 / V156)
+  "A124_02", # Neighbor: Race
+  "A124_06", # Neighbor: Immigrants
+  "A124_09", # Neighbor: Religion
+  "A124_12"  # Neighbor: Language
+)
+
+# Read just the column names to see what we are dealing with
+names(read_rds("WVS_Time_Series_1981-2022_rds_v5_0.rds")) %>% head(20)
+
+
+# Load the file using the corrected path and selection
+# Ensure the filename matches exactly what is in your folder
+wvs_subset <- read_rds("WVS_Time_Series_1981-2022_rds_v5_0.rds") %>%
+  select(all_of(target_vars))
+
+# Check that it loaded correctly
+head(wvs_subset)
+
+```
+
+```{r Creating the Authoritarian_values_index}
+library(tidyverse)
+library(haven) # For zap_labels
+
+wvs_indexed <- wvs_subset %>%
+  # --- STEP 1: STRIP LABELS ---
+  # This converts all 'haven_labelled' columns into standard numbers
+  mutate(across(everything(), ~as.numeric(zap_labels(.)))) %>%
+  
+  # --- STEP 2: PERFORM RECODING ---
+  mutate(
+    # Political Systems (1=Very Good, 4=Very Bad)
+    auth_leader  = (5 - E114) / 3, 
+    auth_army    = (5 - E117) / 3,
+    auth_experts = (5 - E116) / 3,
+    
+    # Values (Respect for Authority E018: 1=Good, 3=Bad)
+    auth_respect = (4 - E018) / 2,
+    
+    # Obedience (A042: 1=Mentioned, 2=Not Mentioned)
+    auth_obey    = ifelse(A042 == 1, 1, 0),
+    
+    # Democracy Definitions (1=Not Essential, 10=Essential)
+    auth_relig_law = (E232 - 1) / 9,
+    auth_army_take = (E233 - 1) / 9,
+    
+    # Neighbors (1=Mentioned/Reject, 2=Not Mentioned)
+    reject_race  = ifelse(A124_02 == 1, 1, 0),
+    reject_immig = ifelse(A124_06 == 1, 1, 0),
+    reject_relig = ifelse(A124_09 == 1, 1, 0),
+    reject_lang  = ifelse(A124_12 == 1, 1, 0)
+  ) %>%
+  # --- STEP 3: CREATE THE INDEX ---
+  rowwise() %>%
+  mutate(authoritarian_values_index = mean(c(
+    auth_leader, auth_army, auth_experts, auth_respect, auth_obey,
+    auth_relig_law, auth_army_take, reject_race, reject_immig, 
+    reject_relig, reject_lang
+  ), na.rm = TRUE)) %>%
+  ungroup()
+
+
+
+# 1. Get a statistical summary of the new index
+# This will show you the Min, Max, Mean, and how many NAs (missing values) exist
+summary(wvs_indexed$authoritarian_values_index)
+
+# 2. Visualize the distribution
+# A successful index should usually look like a "bell curve" or be slightly skewed,
+# ranging from 0 to 1.
+hist(wvs_indexed$authoritarian_values_index, 
+     main = "Distribution of Authoritarian Values Index",
+     xlab = "Index Score (0 = Low, 1 = High)", 
+     col = "steelblue", 
+     breaks = 50)
+
+# 3. Check the first few rows of just the components and the final index
+wvs_indexed %>%
+  select(S003, S020, auth_leader, auth_army, auth_experts, authoritarian_values_index) %>%
+  head(10)
+```
+
+
+```{r Checking List of Countries in the Authoritarian_values_index}
+# Install the missing package
+install.packages("countrycode")
+
+library(tidyverse)
+library(haven)
+library(countrycode)
+
+# Recode and Create Index
+wvs_indexed <- wvs_subset %>%
+  mutate(across(everything(), ~as.numeric(zap_labels(.)))) %>%
+  mutate(
+    auth_leader    = (5 - E114) / 3, 
+    auth_army      = (5 - E117) / 3,
+    auth_experts   = (5 - E116) / 3,
+    auth_respect   = (4 - E018) / 2,
+    auth_obey      = ifelse(A042 == 1, 1, 0),
+    auth_relig_law = (E232 - 1) / 9,
+    auth_army_take = (E233 - 1) / 9,
+    reject_race    = ifelse(A124_02 == 1, 1, 0),
+    reject_immig   = ifelse(A124_06 == 1, 1, 0),
+    reject_relig   = ifelse(A124_09 == 1, 1, 0),
+    reject_lang    = ifelse(A124_12 == 1, 1, 0)
+  ) %>%
+  rowwise() %>%
+  mutate(authoritarian_values_index = mean(c(
+    auth_leader, auth_army, auth_experts, auth_respect, auth_obey,
+    auth_relig_law, auth_army_take, reject_race, reject_immig, 
+    reject_relig, reject_lang
+  ), na.rm = TRUE)) %>%
+  ungroup()
+
+
+# Generate the list of countries
+country_list <- wvs_indexed %>%
+  filter(!is.na(authoritarian_values_index)) %>%
+  distinct(S003) %>%
+  mutate(country_name = countrycode(S003, origin = "iso3n", destination = "country.name")) %>%
+  arrange(country_name)
+
+# Display the list
+print(country_list, n = Inf)
+
+```
+
+
+```{r Fixed Merging Script}
+library(vdemdata)
+library(dplyr)
+
+# 1. Surgical extraction of the 6 core variables
+vdem_indicators <- vdemdata::vdem %>%
+  filter(year >= 1980) %>%
+  select(
+    country_text_id, 
+    year, 
+    v2x_polyarchy, 
+    polarization = v2cacamps,
+    party_strength = v2xps_party,
+    digital_proxy = v2mecenefm
+  )
+
+# 2. Memory Cleanup: Delete the massive master object to free up RAM for the merge
+rm(vdem)
+gc() 
+
+# 3. Final verification
+names(vdem_indicators)
+
+  
+```
+
+
+
+
+```{r Download and Load SWIID Directly}
+library(tidyverse)
+library(countrycode)
+
+# Link for the latest SWIID v9.91
+swiid_url <- "https://raw.githubusercontent.com/fsolt/swiid/master/data/swiid_summary.csv"
+
+# Load the data
+swiid_raw <- read_csv(swiid_url)
+
+# Clean using the updated 'gini_disp' column name
+swiid_clean <- swiid_raw %>%
+  select(country, year, gini_disp) %>% # 'gini_disp' replaces 'gini_net'
+  mutate(iso3c = countrycode(country, origin = "country.name", destination = "iso3c")) %>%
+  select(-country)
+
+# Success Check
+head(swiid_clean)
+
+```
+
+```{r Environment Audit}
+# I ONLY RAN THIS CAUSE I WAS HAVING ISSUES WITH THE PREDICTORS
+
+# Check V-Dem Variables
+names(vdem_indicators)
+
+# Check World Bank Variables
+names(wb_data_clean)
+
+# Check SWIID (Inequality)
+names(swiid_clean)
+
+# Check WVS (Authoritarian Index)
+names(wvs_final)
+```
+
+
+
+```{r Triple Merge Script}
+library(tidyverse)
+library(WDI)
+library(countrycode)
+library(zoo)
+
+# --- 1. PREPARE V-DEM (Political/Institutional) ---
+# We use the specific names we discovered: v2xps_party and v2mecenefm
+vdem_clean <- vdem_indicators %>%
+  select(country_text_id, year, v2x_polyarchy, 
+         polarization, party_strength, digital_proxy)
+
+# --- 2. PREPARE WORLD BANK (Wealth/Resources) ---
+# Ensuring no duplicates to avoid the many-to-many warning
+wb_clean <- wb_data_clean %>%
+  distinct(iso3c, year, .keep_all = TRUE) %>%
+  select(iso3c, year, resource_rents, gni_pc)
+
+# --- 3. PREPARE SWIID (Inequality) ---
+# Using 'gini_disp' which we confirmed is the correct 2026 column name
+swiid_clean_final <- swiid_clean %>%
+  distinct(iso3c, year, .keep_all = TRUE)
+
+# --- 4. PREPARE WVS (Authoritarian Values) ---
+# Fixing the Northern Ireland (909) code and removing duplicates
+wvs_final_clean <- wvs_indexed %>%
+  mutate(iso3c = countrycode(S003, origin = "iso3n", destination = "iso3c",
+                            custom_match = c("909" = "GBR"))) %>%
+  distinct(iso3c, S020, .keep_all = TRUE) %>%
+  select(iso3c, year = S020, authoritarian_values_index)
+
+# --- 5. THE MASTER MERGE ---
+final_regression_df <- vdem_clean %>%
+  inner_join(wb_clean, by = c("country_text_id" = "iso3c", "year")) %>%
+  inner_join(swiid_clean_final, by = c("country_text_id" = "iso3c", "year")) %>%
+  inner_join(wvs_final_clean, by = c("country_text_id" = "iso3c", "year")) %>%
+  # Create logged wealth and handle minor NAs
+  mutate(logged_wealth = log(gni_pc)) %>%
+  group_by(country_text_id) %>%
+  mutate(resource_filled = na.approx(resource_rents, na.rm = FALSE)) %>%
+  ungroup() %>%
+  # Keep only the rows where we have all 7 predictors
+  drop_na(v2x_polyarchy, polarization, resource_filled, logged_wealth, 
+          gini_disp, digital_proxy, party_strength, authoritarian_values_index)
+
+# --- 6. SUCCESS CHECK ---
+cat("Total Observations for Analysis:", nrow(final_regression_df), "\n")
+head(final_regression_df)
+
+
+
+```
+
+```{r Regression Model}
+# THE 7-WAY REGRESSION
+final_model <- lm(scale(v2x_polyarchy) ~ 
+                    scale(polarization) + 
+                    scale(resource_filled) + 
+                    scale(logged_wealth) + 
+                    scale(gini_disp) + 
+                    scale(digital_proxy) + 
+                    scale(party_strength) + 
+                    scale(authoritarian_values_index), 
+                  data = final_regression_df)
+
+summary(final_model)
+
+
+```
+
+```{r Coefficient Plot}
+# 1. Load libraries
+library(ggplot2)
+library(dplyr)
+library(broom)
+
+# 2. Convert the model results into a "tidy" format for plotting
+# This calculates the 95% Confidence Intervals automatically
+plot_data <- tidy(final_model, conf.int = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    # Clean up the names for the chart labels
+    Variable = case_when(
+      term == "scale(polarization)" ~ "Social Polarization",
+      term == "scale(resource_filled)" ~ "Resource Rents",
+      term == "scale(logged_wealth)" ~ "Wealth (Logged GDP)",
+      term == "scale(gini_disp)" ~ "Inequality (Gini)",
+      term == "scale(digital_proxy)" ~ "Digital Control/Censorship",
+      term == "scale(party_strength)" ~ "Political Party Strength",
+      term == "scale(authoritarian_values_index)" ~ "Public Auth. Values",
+      TRUE ~ term
+    )
+  )
+
+# 3. Create the Visualization
+ggplot(plot_data, aes(x = reorder(Variable, estimate), y = estimate)) +
+  # Draw the error bars (Confidence Intervals)
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), 
+                  color = "#2c3e50", size = 0.8) +
+  # Highlight significant variables in a different color
+  geom_point(data = filter(plot_data, p.value < 0.05), 
+             color = "#e74c3c", size = 3) +
+  # Add the vertical 'Zero' line
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  # Flip the coordinates for easier reading
+  coord_flip() +
+  labs(
+    title = "Which Factors Drive Authoritarianism?",
+    subtitle = "                         Standardized Coefficients",
+    x = "",
+    y = "Impact on Democracy Score",
+    caption = "Source: V-Dem, World Bank, SWIID, and World Values Survey"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold")
+  )
+
+
+```
+
