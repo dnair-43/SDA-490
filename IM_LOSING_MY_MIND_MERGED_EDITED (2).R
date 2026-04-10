@@ -363,7 +363,7 @@ make_election_tooltip <- function(prov_name) {
   if (nrow(rows) == 0) {
     return(sprintf(
       "<div style='font-family:\"DM Mono\",monospace;background:#f7f9fc;border:1px solid #d0dae8;
-       border-radius:10px;padding:12px 15px;color:#6b7280;font-size:12px;'>
+       border-radius:10px;padding:12px 15px;color:#6b7280;font-size:14px;'>
        <b style='color:#0f172a;'>%s</b><br><br>No data available.</div>",
       htmltools::htmlEscape(prov_name)
     ))
@@ -377,8 +377,8 @@ make_election_tooltip <- function(prov_name) {
     bar_html <- paste0(bar_html, sprintf("
       <div style='margin-bottom:10px;'>
         <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;'>
-          <span style='font-size:12px;font-weight:700;color:%s;'>%s&nbsp;%s</span>
-          <span style='font-size:13px;font-weight:800;color:%s;'>%.1f%%</span>
+          <span style='font-size:14px;font-weight:700;color:%s;'>%s&nbsp;%s</span>
+          <span style='font-size:15px;font-weight:800;color:%s;'>%.1f%%</span>
         </div>
         <div style='background:#d0dae8;border-radius:4px;height:8px;width:100%%;overflow:hidden;'>
           <div style='background:%s;width:%.1f%%;height:8px;border-radius:4px;'></div>
@@ -394,7 +394,7 @@ make_election_tooltip <- function(prov_name) {
       <div style='font-family:\"Syne\",sans-serif;font-weight:800;font-size:15px;
         color:#0f172a;margin-bottom:13px;padding-bottom:9px;border-bottom:1px solid #d0dae8;'>%s</div>
       %s
-      <div style='font-size:9px;color:#9ca3af;margin-top:9px;text-align:right;
+      <div style='font-size:12px;color:#9ca3af;margin-top:9px;text-align:right;
         letter-spacing:0.06em;text-transform:uppercase;'>Top 3 parties · vote share</div>
     </div>",
           htmltools::htmlEscape(prov_name), bar_html
@@ -687,7 +687,7 @@ make_canada_tooltip <- function(prov_name, mean_val, n) {
     return(sprintf(
       "<div style='font-family:\"DM Mono\",monospace;background:#f7f9fc;
        border:1px solid #d0dae8;border-radius:10px;padding:12px 15px;
-       color:#6b7280;font-size:12px;'>
+       color:#6b7280;font-size:14px;'>
        <b style='color:#0f172a;'>%s</b><br><br>No data available.</div>",
       htmltools::htmlEscape(prov_name)
     ))
@@ -721,7 +721,7 @@ make_canada_tooltip <- function(prov_name, mean_val, n) {
       '>%s</div>
       <div style='margin-bottom:10px;'>
         <div style='display:flex;justify-content:space-between;margin-bottom:5px;'>
-          <span style='font-size:11px;color:#6b7280;text-transform:uppercase;
+          <span style='font-size:13px;color:#6b7280;text-transform:uppercase;
                        letter-spacing:0.1em;'>Authoritarian Index</span>
           <span style='font-size:14px;font-weight:800;color:%s;'>%.3f</span>
         </div>
@@ -731,14 +731,14 @@ make_canada_tooltip <- function(prov_name, mean_val, n) {
         </div>
       </div>
       <div style='display:flex;justify-content:space-between;margin-top:8px;'>
-        <span style='font-size:11px;color:#9ca3af;'>Level</span>
-        <span style='font-size:11px;font-weight:700;color:%s;'>%s</span>
+        <span style='font-size:13px;color:#9ca3af;'>Level</span>
+        <span style='font-size:13px;font-weight:700;color:%s;'>%s</span>
       </div>
       <div style='display:flex;justify-content:space-between;margin-top:4px;'>
-        <span style='font-size:11px;color:#9ca3af;'>Respondents</span>
-        <span style='font-size:11px;color:#6b7280;'>%d</span>
+        <span style='font-size:13px;color:#9ca3af;'>Respondents</span>
+        <span style='font-size:13px;color:#6b7280;'>%d</span>
       </div>
-      <div style='font-size:9px;color:#9ca3af;margin-top:10px;text-align:right;
+      <div style='font-size:12px;color:#9ca3af;margin-top:10px;text-align:right;
                   letter-spacing:0.06em;text-transform:uppercase;'>
         Mean of HD3 · V3 · ATT10 · HD4 · V2
       </div>
@@ -772,9 +772,9 @@ prov_rows_ui <- prov_auth %>%
 
 # ── Colour palette ─────────────────────────────────────────────────────────
 pal <- colorNumeric(
-  palette = c("#c0392b", "#e67e22", "#f59e0b", "#60a5fa", "#3b82f6", "#1d4ed8", "#1e40af"),
+  palette = c("#2d1b4e", "#6b3a8c", "#c0392b", "#e67e22", "#f1c40f", "#2ecc71", "#1a7a4a"),
   domain  = c(0, 1),
-  na.color = "#e4eaf6"
+  na.color = "#cccccc"
 )
 
 # ── UI ───────────────────────────────────────────────────────────────────────
@@ -1024,7 +1024,7 @@ ui <- navbarPage(
       .legend-bar {
         height: 14px;
         border-radius: 7px;
-        background: linear-gradient(to right, #1e40af, #1d4ed8, #c0392b, #e67e22, #f1c40f, #60a5fa, #1d4ed8);
+        background: linear-gradient(to right, #2d1b4e, #6b3a8c, #c0392b, #e67e22, #f1c40f, #2ecc71, #1a7a4a);
         margin-bottom: 5px;
       }
       .legend-labels {
@@ -1078,10 +1078,10 @@ ui <- navbarPage(
       }
       .info-country { font-family: 'Syne',sans-serif; font-weight:700; font-size:1rem; color:#0f172a; margin-bottom:4px; }
       .info-score   { font-size:1.5rem; font-weight:700; font-family:'Syne',sans-serif; }
-      .info-tier-label { font-size:0.62rem; text-transform:uppercase; letter-spacing:0.1em; margin-top:3px; color:#6b7280; }
-      .source-note { font-size:0.58rem; color:#9ca3af; letter-spacing:0.05em; line-height:1.6; }
+      .info-tier-label { font-size:0.80rem; text-transform:uppercase; letter-spacing:0.1em; margin-top:3px; color:#6b7280; }
+      .source-note { font-size:0.93rem; color:#9ca3af; letter-spacing:0.05em; line-height:1.6; }
       .rank-table { width:100%; border-collapse:collapse; }
-      .rank-table td { padding:4px 0; font-size:0.67rem; color:#6b7280; border-bottom:1px solid #d0dae8; }
+      .rank-table td { padding:4px 0; font-size:1.00rem; color:#6b7280; border-bottom:1px solid #d0dae8; }
       .rank-table td:last-child { text-align:right; color:#3b82f6; }
 
       /* ══════════════════════════════════════════════
@@ -1382,9 +1382,9 @@ ui <- navbarPage(
       .reg-divider { border: none; border-top: 1px solid #d0dae8; margin: 0; }
       /* Override Shiny's default white table background */
       #reg_coef_table table { width:100%; border-collapse:collapse;
-        font-family:'DM Mono',monospace; font-size:0.75rem; background:#ffffff !important; }
+        font-family:'DM Mono',monospace; font-size:0.93rem; background:#ffffff !important; }
       #reg_coef_table th { color:#9ca3af !important; background:#ffffff !important;
-        font-size:0.6rem !important; letter-spacing:0.14em !important;
+        font-size:0.96rem !important; letter-spacing:0.14em !important;
         text-transform:uppercase !important; padding:6px 12px; border-bottom:1px solid #c4d0e4; }
       #reg_coef_table td { color:#374151 !important; padding:10px 12px;
         border-bottom:1px solid #d0dae8; background:transparent !important; }
@@ -1418,9 +1418,9 @@ ui <- navbarPage(
                      style = "margin: 24px 0 20px; background:#eef2fa; border:1px solid #b8c8de; border-radius:10px; padding:20px;",
                      img(src   = "Timeline.png",
                          alt   = "Electoral Democracy Index Timeline 1980–2025",
-                         style = "width:100%; max-width:900px; display:block; border-radius:6px;"),
+                         style = "max-width:100%; width:100%; height:auto; display:block; margin:0 auto; border-radius:6px;"),
                      tags$p(
-                       style = "font-size:0.72rem; color:#6b7280; line-height:1.75; margin-top:14px;",
+                       style = "font-size:0.90rem; color:#6b7280; line-height:1.75; margin-top:14px;",
                        "This graph highlights the timeline for the electoral democracy index from 1980 till 2025.
                        The electoral democracy index measures democracy scores in each country. This line shows
                        the avg democracy scores around the world for our timeline.",
@@ -1470,7 +1470,7 @@ ui <- navbarPage(
                                    of \"authoritative\" (by 1857)."),
                            tags$p("The noun in the sense of \"one advocating or practicing the principle of authority over
                                    individual freedom\" is attested by 1859."),
-                           tags$p(style="font-size:0.68rem;color:#9ca3af;",
+                           tags$p(style="font-size:1.02rem;color:#9ca3af;",
                                   "Source: ",
                                   tags$a(href="https://www.etymonline.com/word/authoritarian",
                                          target="_blank",
@@ -1563,7 +1563,7 @@ ui <- navbarPage(
                    ),
                    
                    div(
-                     style = "background:#eef2fa; border:1px solid #b8c8de; border-radius:8px; padding:12px 14px; font-size:0.68rem; color:#6b7280; line-height:1.7;",
+                     style = "background:#eef2fa; border:1px solid #b8c8de; border-radius:8px; padding:12px 14px; font-size:1.02rem; color:#6b7280; line-height:1.7;",
                      "This map visualises the Electoral Democracy Index (v2x_polyarchy) from the Varieties of Democracy
                      (V-Dem) dataset, tracking democratic quality across 180+ countries from 1980 to 2025. It shows
                      the categories at which countries are classified: liberal democracy, electoral democracy, hybrid
@@ -1596,12 +1596,12 @@ ui <- navbarPage(
                    
                    div(
                      div(class = "panel-label", "Regime Tiers"),
-                     div(class = "tier-row", div(class = "tier-dot", style = "background:#1d4ed8"), "Liberal Democracy (≥ 0.70)"),
-                     div(class = "tier-row", div(class = "tier-dot", style = "background:#60a5fa"), "Electoral Democracy (0.50–0.69)"),
-                     div(class = "tier-row", div(class = "tier-dot", style = "background:#f59e0b"), "Hybrid Regime (0.30–0.49)"),
+                     div(class = "tier-row", div(class = "tier-dot", style = "background:#1a7a4a"), "Liberal Democracy (≥ 0.70)"),
+                     div(class = "tier-row", div(class = "tier-dot", style = "background:#2ecc71"), "Electoral Democracy (0.50–0.69)"),
+                     div(class = "tier-row", div(class = "tier-dot", style = "background:#f1c40f"), "Hybrid Regime (0.30–0.49)"),
                      div(class = "tier-row", div(class = "tier-dot", style = "background:#e67e22"), "Competitive Authoritarianism (0.15–0.29)"),
                      div(class = "tier-dot", style = "background:#c0392b"),
-                     span(style = "font-size:0.68rem; color:#6b7280", "Closed Autocracy (< 0.15)")
+                     span(style = "font-size:1.02rem; color:#6b7280", "Closed Autocracy (< 0.15)")
                    ),
                    
                    fluidRow(
@@ -1761,7 +1761,7 @@ ui <- navbarPage(
                    div(
                      div(class = "reg-ctrl-label", "Outcome"),
                      tags$div(
-                       style = "font-size:0.76rem; color:#374151; font-family:'DM Mono',monospace;
+                       style = "font-size:0.94rem; color:#374151; font-family:'DM Mono',monospace;
                          background:#eef2fa; border:1px solid #d0dae8; border-radius:6px; padding:8px 10px;",
                        tags$b(style="color:#1d4ed8;", "v2x_polyarchy"),
                        " — V-Dem Electoral Democracy Index (0–1). Higher = more democratic. All predictors standardized."
@@ -1844,10 +1844,11 @@ ui <- navbarPage(
                      style = "background:#eef2fa; border:1px solid #d0dae8; border-radius:10px; padding:16px; text-align:center;",
                      tags$img(
                        src   = "top10countriesecperiencingdemobacksliding.png",
-                       style = "width:100%; max-width:900px; border-radius:6px; display:inline-block;"
+                       style = "max-width:100%; width:100%; height:auto; display:block; margin:0 auto; border-radius:6px;",
+                       onerror = "this.outerHTML='<p style=\'color:#e74c3c;font-size:0.9rem;padding:8px;\'>Image not found — place top10countriesecperiencingdemobacksliding.png in the app www/ folder.</p>'"
                      ),
                      tags$p(
-                       style = "font-size:0.68rem; color:#9ca3af; margin-top:10px;",
+                       style = "font-size:1.02rem; color:#9ca3af; margin-top:10px;",
                        "Countries ranked by largest decline in V-Dem Electoral Democracy Index (v2x_polyarchy) from 1980 to 2025."
                      )
                    )
@@ -1867,7 +1868,7 @@ ui <- navbarPage(
              div(
                style = "background: linear-gradient(160deg, #ffffff 0%, #eef2fa 50%, #f0f7ee 100%);
                         padding: 60px 10% 48px; border-bottom: 1px solid #d0dae8; position: relative;",
-               div(style = "font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase;
+               div(style = "font-size:0.96rem; letter-spacing:0.22em; text-transform:uppercase;
                             color:#3b82f6; margin-bottom:16px;", "Summary of Findings"),
                div(
                  style = "font-family:'Syne',sans-serif; font-weight:800;
@@ -1885,7 +1886,7 @@ ui <- navbarPage(
                # ── Findings ──────────────────────────────────────────────
                div(
                  style = "background:#ffffff; padding:44px 40px;",
-                 div(style = "font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase;
+                 div(style = "font-size:0.93rem; letter-spacing:0.2em; text-transform:uppercase;
                               color:#3b82f6; margin-bottom:14px;", "Key Findings"),
                  div(
                    style = "font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem;
@@ -1893,14 +1894,14 @@ ui <- navbarPage(
                    "Institutional-Level Factors Drive Authoritarianism"
                  ),
                  tags$p(
-                   style = "font-size:0.78rem; line-height:1.85; color:#6b7280; margin-bottom:12px;",
+                   style = "font-size:0.96rem; line-height:1.85; color:#6b7280; margin-bottom:12px;",
                    "Given its \"top-down\" process, we found institutional-level factors to be more
                     significant predictors of authoritarianism. Institutional-level predictors
                     ", tags$em("precede"), " authoritarian governments. Individual-level predictors
                     ", tags$em("proceed"), " authoritarian governments."
                  ),
                  tags$p(
-                   style = "font-size:0.78rem; line-height:1.85; color:#6b7280; margin-bottom:0;",
+                   style = "font-size:0.96rem; line-height:1.85; color:#6b7280; margin-bottom:0;",
                    "At the moment Canada is not at risk of becoming authoritarian. Strong democratic
                     guardrails such as party strength protect Canada's democratic institutions from
                     the significant predictors we identified."
@@ -1910,7 +1911,7 @@ ui <- navbarPage(
                # ── Limitations ───────────────────────────────────────────
                div(
                  style = "background:#ffffff; padding:44px 40px;",
-                 div(style = "font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase;
+                 div(style = "font-size:0.93rem; letter-spacing:0.2em; text-transform:uppercase;
                               color:#c0392b; margin-bottom:14px;", "Limitations"),
                  div(
                    style = "font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem;
@@ -1926,13 +1927,13 @@ ui <- navbarPage(
                      div(style = "width:4px; min-width:4px; height:100%; background:#c0392b;
                                   border-radius:2px; margin-top:3px; align-self:stretch;"),
                      div(
-                       style = "font-family:'Syne',sans-serif; font-weight:700; font-size:0.88rem;
+                       style = "font-family:'Syne',sans-serif; font-weight:700; font-size:1.02rem;
                                 color:#0f172a; line-height:1.4;",
                        "Authoritarianism is Multidimensional"
                      )
                    ),
                    tags$p(
-                     style = "font-size:0.75rem; line-height:1.8; color:#6b7280; padding-left:16px;",
+                     style = "font-size:0.93rem; line-height:1.8; color:#6b7280; padding-left:16px;",
                      "Our indices incorporate both the CTM data and WVS data. However, these questions
                       cannot fully encapsulate \"authoritarianism\" because there are so many aspects and
                       definitions — we had to curate specific questions that relate to the aspects of
@@ -1947,13 +1948,13 @@ ui <- navbarPage(
                      div(style = "width:4px; min-width:4px; background:#c0392b;
                                   border-radius:2px; margin-top:3px; align-self:stretch;"),
                      div(
-                       style = "font-family:'Syne',sans-serif; font-weight:700; font-size:0.88rem;
+                       style = "font-family:'Syne',sans-serif; font-weight:700; font-size:1.02rem;
                                 color:#0f172a; line-height:1.4;",
                        "Impossible to Determine Which Factors Cause Authoritarianism (Causality)"
                      )
                    ),
                    tags$p(
-                     style = "font-size:0.75rem; line-height:1.8; color:#6b7280; padding-left:16px;",
+                     style = "font-size:0.93rem; line-height:1.8; color:#6b7280; padding-left:16px;",
                      "There are too many overlapping variables influencing authoritarianism all over
                       the world at any given time. We cannot control for certain factors because it is
                       impossible to untangle any of these factors from the variables we are analysing."
@@ -1967,14 +1968,14 @@ ui <- navbarPage(
                style = "padding:28px 10%; display:flex; justify-content:space-between;
                         align-items:center; flex-wrap:wrap; gap:12px;",
                div(
-                 style = "font-size:0.6rem; color:#9ca3af; letter-spacing:0.06em; line-height:1.7;",
+                 style = "font-size:0.96rem; color:#9ca3af; letter-spacing:0.06em; line-height:1.7;",
                  "V-Dem: Coppedge et al. (2025). V-Dem Dataset v16.",
                  tags$br(),
                  "WVS: World Values Survey Time Series 1981–2022.",
                  tags$br(),
                  "CTM Data: Innovative Research Group. December 2025."
                ),
-               div(style = "font-size:0.6rem; color:#9ca3af; letter-spacing:0.06em;",
+               div(style = "font-size:0.96rem; color:#9ca3af; letter-spacing:0.06em;",
                    "Built with R Shiny & Leaflet")
              )
            )
@@ -2041,10 +2042,10 @@ server <- function(input, output, session) {
   
   make_labels <- function(d) {
     sprintf(
-      "<div style='font-family:DM Mono,monospace; color:#ffffff; padding:4px 6px;'>
-         <b style='font-size:13px'>%s</b><br/>
+      "<div style='font-family:DM Mono,monospace; color:#0f172a; padding:4px 6px;'>
+         <b style='font-size:15px'>%s</b><br/>
          Score: <b>%s</b><br/>
-         <span style='font-size:10px; color:#333'>%s</span>
+         <span style='font-size:13px; color:#374151'>%s</span>
        </div>",
       d$name_long,
       ifelse(d$visible & !is.na(d$v2x_polyarchy),
@@ -2058,7 +2059,7 @@ server <- function(input, output, session) {
   observeEvent(input$map_center, {
     if (!polygons_drawn()) {
       d <- filtered_d()
-      fill_color <- ifelse(d$visible, pal(d$v2x_polyarchy), "#d0dae8")
+      fill_color <- ifelse(d$visible, pal(d$v2x_polyarchy), "#cccccc")
       leafletProxy("map") |>
         clearShapes() |>
         addPolygons(
@@ -2087,7 +2088,7 @@ server <- function(input, output, session) {
   observe({
     req(polygons_drawn())
     d <- filtered_d()
-    fill_color <- ifelse(d$visible, pal(d$v2x_polyarchy), "#d0dae8")
+    fill_color <- ifelse(d$visible, pal(d$v2x_polyarchy), "#cccccc")
     
     leafletProxy("map") |>
       clearShapes() |>
@@ -2372,201 +2373,185 @@ server <- function(input, output, session) {
 
   # ══════════════════════════════════════════════════════════════════
   #  GLOBAL REGRESSION SERVER
-  #  Exact formula from Multiple_Regression4.Rmd
-  #  scale(v2x_polyarchy) ~ all 7 predictors
-  #  Unit of analysis: country × WVS wave (global cross-national)
+  #  lm(scale(v2x_polyarchy) ~ 7 standardized predictors)
+  #  Sources: V-Dem, World Bank (WDI), SWIID, WVS
   # ══════════════════════════════════════════════════════════════════
 
-  # ── Build final_regression_df (mirrors Rmd Triple Merge Script) ─────────────
-  final_regression_df <- tryCatch({
-
-    # --- 1. V-Dem: outcome + 3 predictors (exact Rmd column names) ---
-    vdem_clean <- vdem %>%
+  # ── Step 1: extract V-Dem predictors ────────────────────────────────────────
+  reg_vdem <- tryCatch(
+    vdem %>%
       filter(year >= 1980) %>%
-      select(country_text_id, year, v2x_polyarchy,
-             polarization   = v2cacamps,
+      select(iso3c      = country_text_id,
+             year,
+             v2x_polyarchy,
+             digital_proxy  = v2mecenefm,
              party_strength = v2xps_party,
-             digital_proxy  = v2mecenefm)
+             polarization   = v2cacamps),
+    error = function(e) NULL
+  )
 
-    # --- 2. World Bank: resource rents + GNI per capita ---
-    wb_clean <- tryCatch({
-      wb_data_clean %>%
-        distinct(iso3c, year, .keep_all = TRUE) %>%
-        select(iso3c, year, resource_rents, gni_pc)
-    }, error = function(e) {
-      wdi_raw <- WDI(
-        indicator = c(resource_rents = "NY.GDP.TOTL.RT.ZS",
-                      gni_pc         = "NY.GNP.PCAP.PP.CD"),
-        start = 1980, end = 2025, extra = TRUE
-      )
-      wdi_raw %>%
-        filter(!is.na(iso3c)) %>%
-        distinct(iso3c, year, .keep_all = TRUE) %>%
-        select(iso3c, year, resource_rents, gni_pc)
-    })
+  # ── Step 2: World Bank — resource rents + GNI per capita ────────────────────
+  reg_wb <- tryCatch(
+    wb_data_clean %>%
+      distinct(iso3c, year, .keep_all = TRUE) %>%
+      select(iso3c, year, resource_rents, gni_pc),
+    error = function(e) {
+      # fallback: fetch directly from WDI
+      tryCatch({
+        raw <- WDI(
+          indicator = c(gni_pc        = "NY.GNP.PCAP.PP.CD",
+                        resource_rents= "NY.GDP.TOTL.RT.ZS"),
+          start = 1980, end = 2025, extra = TRUE
+        )
+        raw %>%
+          filter(!is.na(iso3c)) %>%
+          distinct(iso3c, year, .keep_all = TRUE) %>%
+          select(iso3c, year, gni_pc, resource_rents)
+      }, error = function(e2) NULL)
+    }
+  )
 
-    # --- 3. SWIID inequality (gini_disp) ---
-    swiid_clean_final <- swiid_clean %>%
-      distinct(iso3c, year, .keep_all = TRUE)
+  # ── Step 3: SWIID inequality ─────────────────────────────────────────────────
+  reg_swiid <- tryCatch(
+    swiid_clean %>% distinct(iso3c, year, .keep_all = TRUE),
+    error = function(e) NULL
+  )
 
-    # --- 4. WVS authoritarian values index (exact Rmd recoding) ---
-    wvs_final_clean <- wvs_indexed %>%
+  # ── Step 4: WVS authoritarian values index ───────────────────────────────────
+  reg_wvs <- tryCatch(
+    wvs_indexed %>%
       mutate(iso3c = countrycode(S003, origin = "iso3n", destination = "iso3c",
                                  custom_match = c("909" = "GBR"))) %>%
       distinct(iso3c, S020, .keep_all = TRUE) %>%
-      select(iso3c, year = S020, authoritarian_values_index)
+      select(iso3c, year = S020, authoritarian_values_index),
+    error = function(e) NULL
+  )
 
-    # --- 5. Master merge (exact Rmd logic) ---
-    df <- vdem_clean %>%
-      inner_join(wb_clean,          by = c("country_text_id" = "iso3c", "year")) %>%
-      inner_join(swiid_clean_final, by = c("country_text_id" = "iso3c", "year")) %>%
-      inner_join(wvs_final_clean,   by = c("country_text_id" = "iso3c", "year")) %>%
-      mutate(logged_wealth = log(gni_pc)) %>%
-      group_by(country_text_id) %>%
-      mutate(resource_filled = na.approx(resource_rents, na.rm = FALSE)) %>%
-      ungroup() %>%
-      drop_na(v2x_polyarchy, polarization, resource_filled, logged_wealth,
-              gini_disp, digital_proxy, party_strength, authoritarian_values_index)
-    df
+  # ── Step 5: merge & run lm ───────────────────────────────────────────────────
+  reg_df <- tryCatch({
+    req(!is.null(reg_vdem), !is.null(reg_wb),
+        !is.null(reg_swiid), !is.null(reg_wvs))
+    reg_vdem %>%
+      inner_join(reg_wb,    by = c("iso3c", "year")) %>%
+      inner_join(reg_swiid, by = c("iso3c", "year")) %>%
+      inner_join(reg_wvs,   by = c("iso3c", "year")) %>%
+      mutate(
+        logged_wealth   = log(gni_pc),
+        resource_filled = zoo::na.approx(resource_rents, na.rm = FALSE)
+      ) %>%
+      drop_na(v2x_polyarchy, digital_proxy, party_strength, polarization,
+              logged_wealth, gini_disp, resource_filled, authoritarian_values_index)
   }, error = function(e) NULL)
 
-  # ── Fitted model (exact Rmd formula) ─────────────────────────────────────────
-  reg_model_global <- tryCatch({
-    req(!is.null(final_regression_df))
+  reg_model <- tryCatch({
+    req(!is.null(reg_df))
     lm(scale(v2x_polyarchy) ~
-         scale(digital_proxy) +
-         scale(party_strength) +
-         scale(logged_wealth) +
-         scale(polarization) +
-         scale(gini_disp) +
-         scale(resource_filled) +
+         scale(digital_proxy)             +
+         scale(party_strength)            +
+         scale(logged_wealth)             +
+         scale(polarization)              +
+         scale(gini_disp)                 +
+         scale(resource_filled)           +
          scale(authoritarian_values_index),
-       data = final_regression_df)
+       data = reg_df)
   }, error = function(e) NULL)
 
-  # ── Variable labels matching Rmd coefficient plot & table exactly ─────────────
-  rmd_term_label <- function(term) {
-    lookup <- c(
-      "(Intercept)"                          = "Constant (Intercept)",
-      "scale(digital_proxy)"                 = "Digital Freedom (Censorship)",
-      "scale(party_strength)"                = "Political Party Strength",
-      "scale(logged_wealth)"                 = "Logged Wealth (GNI pc)",
-      "scale(polarization)"                  = "Social Polarization",
-      "scale(gini_disp)"                     = "Wealth Inequality (Gini)",
-      "scale(resource_filled)"               = "Natural Resource Curse",
-      "scale(authoritarian_values_index)"    = "Authoritarian Values Index"
-    )
-    ifelse(term %in% names(lookup), lookup[term], term)
+  # ── Labels ───────────────────────────────────────────────────────────────────
+  reg_label <- function(term) {
+    c("(Intercept)"                       = "Constant (Intercept)",
+      "scale(digital_proxy)"              = "Digital Freedom (Censorship)",
+      "scale(party_strength)"             = "Political Party Strength",
+      "scale(logged_wealth)"              = "Logged Wealth (GNI pc)",
+      "scale(polarization)"               = "Social Polarization",
+      "scale(gini_disp)"                  = "Wealth Inequality (Gini)",
+      "scale(resource_filled)"            = "Natural Resource Curse",
+      "scale(authoritarian_values_index)" = "Authoritarian Values Index"
+    )[term] %>% tidyr::replace_na(term)
   }
 
   sig_stars <- function(p) {
-    dplyr::case_when(
-      p < 0.001 ~ "***",
-      p < 0.01  ~ "**",
-      p < 0.05  ~ "*",
-      TRUE      ~ ""
-    )
+    dplyr::case_when(p < 0.001 ~ "***", p < 0.01 ~ "**", p < 0.05 ~ "*", TRUE ~ "")
   }
 
   # ── Fit statistics ────────────────────────────────────────────────────────────
   output$reg_r2 <- renderText({
-    if (is.null(reg_model_global)) return("N/A")
-    sprintf("%.3f", summary(reg_model_global)$r.squared)
+    if (is.null(reg_model)) return("N/A")
+    sprintf("%.3f", summary(reg_model)$r.squared)
   })
   output$reg_adj_r2 <- renderText({
-    if (is.null(reg_model_global)) return("N/A")
-    sprintf("%.3f", summary(reg_model_global)$adj.r.squared)
+    if (is.null(reg_model)) return("N/A")
+    sprintf("%.3f", summary(reg_model)$adj.r.squared)
   })
   output$reg_n <- renderText({
-    if (is.null(final_regression_df)) return("N/A")
-    as.character(nrow(final_regression_df))
+    if (is.null(reg_df)) return("N/A")
+    as.character(nrow(reg_df))
   })
   output$reg_f <- renderText({
-    if (is.null(reg_model_global)) return("N/A")
-    fs <- summary(reg_model_global)$fstatistic
+    if (is.null(reg_model)) return("N/A")
+    fs <- summary(reg_model)$fstatistic
     if (is.null(fs)) "—" else sprintf("%.2f", fs["value"])
   })
   output$reg_rmse <- renderText({
-    if (is.null(reg_model_global)) return("N/A")
-    sprintf("%.4f", sqrt(mean(residuals(reg_model_global)^2)))
+    if (is.null(reg_model)) return("N/A")
+    sprintf("%.4f", sqrt(mean(residuals(reg_model)^2)))
   })
 
-  # ── Coefficient table — matches screenshot 1: Variable | Est. | p ────────────
+  # ── Coefficient table ─────────────────────────────────────────────────────────
   output$reg_coef_table <- renderTable({
-    if (is.null(reg_model_global)) {
+    if (is.null(reg_model)) {
       return(data.frame(
-        Note = "Model could not be fitted. Ensure vdem, wb_data_clean/WDI, swiid_clean, and wvs_indexed are loaded."
+        Note = "Model unavailable — ensure vdem, wb_data_clean (or WDI internet access), swiid_clean, and wvs_indexed are loaded."
       ))
     }
-    broom::tidy(reg_model_global) %>%
+    broom::tidy(reg_model) %>%
       mutate(
-        Variable = rmd_term_label(term),
+        Variable = reg_label(term),
         Est.     = sprintf("%.3f%s", estimate, sig_stars(p.value)),
-        p        = dplyr::case_when(
-          p.value < 0.001 ~ "<0.001",
-          TRUE            ~ sprintf("%.3f", p.value)
-        )
+        p        = ifelse(p.value < 0.001, "<0.001", sprintf("%.3f", p.value))
       ) %>%
       select(Variable, Est., p)
   }, striped = FALSE, hover = FALSE, bordered = FALSE,
      width = "100%", rownames = FALSE, align = "lrr")
 
-  # ── Coefficient plot — matches screenshot 2 exactly ──────────────────────────
-  # White background, red dots for significant (p<0.05), dark for non-significant
-  # geom_pointrange style, title "Which Factors Drive Authoritarianism?"
+  # ── Coefficient plot ──────────────────────────────────────────────────────────
   output$reg_coef_plot <- renderPlot({
-    if (is.null(reg_model_global)) {
+    if (is.null(reg_model)) {
       return(
         ggplot() +
           annotate("text", x = 0.5, y = 0.5,
-                   label = "Model data not available.\nEnsure all source datasets are loaded.",
+                   label = "Model unavailable.
+Ensure all source datasets are loaded.",
                    colour = "#6b7280", size = 5, hjust = 0.5) +
           theme_void() +
           theme(plot.background = element_rect(fill = "#ffffff", colour = NA))
       )
     }
-
-    plot_data <- broom::tidy(reg_model_global, conf.int = TRUE) %>%
+    pd <- broom::tidy(reg_model, conf.int = TRUE) %>%
       filter(term != "(Intercept)") %>%
-      mutate(
-        Variable   = rmd_term_label(term),
-        sig        = p.value < 0.05,
-        dot_colour = ifelse(sig, "#e74c3c", "#2c3e50")
-      )
+      mutate(Variable = reg_label(term), sig = p.value < 0.05)
 
-    ggplot(plot_data, aes(x = reorder(Variable, estimate), y = estimate)) +
-      geom_pointrange(
-        aes(ymin = conf.low, ymax = conf.high),
-        colour    = "#2c3e50",
-        size      = 0.5,
-        linewidth = 0.7
-      ) +
-      geom_point(
-        data   = dplyr::filter(plot_data, sig),
-        colour = "#e74c3c",
-        size   = 3.5
-      ) +
+    ggplot(pd, aes(x = reorder(Variable, estimate), y = estimate)) +
+      geom_pointrange(aes(ymin = conf.low, ymax = conf.high),
+                      colour = "#2c3e50", linewidth = 0.7, size = 0.5) +
+      geom_point(data = filter(pd, sig), colour = "#e74c3c", size = 4) +
       geom_hline(yintercept = 0, linetype = "dashed", colour = "gray50", linewidth = 0.6) +
       coord_flip() +
-      labs(
-        title    = "Which Factors Drive Authoritarianism?",
-        subtitle = "Standardized Coefficients",
-        x        = "",
-        y        = "Impact on Democracy Score",
-        caption  = "Source: V-Dem, World Bank, SWIID, and World Values Survey"
-      ) +
-      theme_minimal(base_size = 13) +
+      labs(title    = "Which Factors Drive Authoritarianism?",
+           subtitle = "Standardized Coefficients",
+           x = "", y = "Impact on Democracy Score",
+           caption  = "Source: V-Dem, World Bank, SWIID, World Values Survey") +
+      theme_minimal(base_size = 14) +
       theme(
         plot.background  = element_rect(fill = "#ffffff", colour = NA),
         panel.background = element_rect(fill = "#ffffff", colour = NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(colour = "#e5e7eb", linewidth = 0.4),
-        axis.text        = element_text(colour = "#374151", size = 11),
-        axis.title.x     = element_text(colour = "#374151", size = 11),
-        plot.title       = element_text(face = "bold", colour = "#0f172a", size = 14),
-        plot.subtitle    = element_text(colour = "#6b7280", size = 10, hjust = 0.35),
-        plot.caption     = element_text(colour = "#9ca3af", size = 8),
-        plot.margin      = margin(16, 24, 16, 16)
+        axis.text        = element_text(colour = "#374151", size = 12),
+        axis.title.x     = element_text(colour = "#374151", size = 12),
+        plot.title       = element_text(face = "bold", colour = "#0f172a", size = 15),
+        plot.subtitle    = element_text(colour = "#6b7280", size = 11, hjust = 0.35),
+        plot.caption     = element_text(colour = "#9ca3af", size = 9),
+        plot.margin      = margin(16, 28, 16, 16)
       )
   }, bg = "#ffffff")
 
